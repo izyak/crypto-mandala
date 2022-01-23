@@ -7,23 +7,27 @@ import styles from "../App.module.css"
 
 const TopBar = ({ loggedIn }) => {
   const [privateKey, setPrivateKey] = useState('');
-  const [addr, setAddr] = useState('abcd');
+  const [addr, setAddr] = useState();
   const [logIn, setLoggedIn] = useState(loggedIn);
   const [show, setShow] = useState(false);
   const handleClose = () => setShow(false);
   const handleShow = () => setShow(true);
 
   useEffect(() => {
-    const addr = localStorage.getItem('addr')
-    if (addr !== null) {
-      setAddr(addr)
-      setLoggedIn(true)
+    async function fetchAddr() {
+      const addr = localStorage.getItem('addr')
+      if (addr !== null) {
+        setAddr(addr)
+        setLoggedIn(true)
+      }
     }
+    fetchAddr();
   }, [])
 
   const saveData = () => {
     setAddrToLocalStorage(privateKey)
     setLoggedIn(true)
+    window.location.reload()
     handleClose();
   }
 
@@ -47,7 +51,7 @@ const TopBar = ({ loggedIn }) => {
               logIn ?
                 <>
                   <Nav.Link><Link to={`/wallet/${addr}`} className={styles.PlainText}>{formatAddress(addr)}</Link></Nav.Link>
-                  <Nav.Link onClick = {disconnect} className={styles.PlainText}>Disconnect</Nav.Link>
+                  <Nav.Link onClick={disconnect} className={styles.PlainText}>Disconnect</Nav.Link>
                 </> :
                 <Nav.Link onClick={handleShow}> Connect Wallet </Nav.Link>
             }

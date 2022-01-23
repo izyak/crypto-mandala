@@ -5,7 +5,7 @@ import { NotificationManager } from 'react-notifications'
 import { Link } from "react-router-dom"
 import styles from "../App.module.css"
 
-const Marketplace = () => {
+const Marketplace = ({addr}) => {
     const [onSale, setOnSale] = useState();
     useEffect(() => {
         async function fetchMyAPI() {
@@ -21,7 +21,7 @@ const Marketplace = () => {
             <Row xs={1} md={4} className="g-4">
                 {
                     onSale && onSale.map(i =>
-                        <IndividualItem key={i} id={parseInt(i)} />
+                        <IndividualItem addr={addr} key={i} id={parseInt(i)} />
                     )
                 }
                 {
@@ -32,11 +32,10 @@ const Marketplace = () => {
     )
 }
 
-const IndividualItem = ({ id }) => {
+const IndividualItem = ({ id, addr }) => {
     const [URI, setURI] = useState();
     const [price, setPrice] = useState();
     const [owner, setOwner] = useState();
-    const [addr, setAddr] = useState(null);
     const [show, setShow] = useState(false);
     const handleClose = () => setShow(false);
     const handleShow = () => setShow(true);
@@ -47,11 +46,6 @@ const IndividualItem = ({ id }) => {
             let response2 = await readOnly('getPrice', { '_tokenId': JSON.stringify(id) })
             let response3 = await readOnly('ownerOf', { "_tokenId": JSON.stringify(id) })
             setOwner(response3)
-            if (localStorage.getItem('addr') !== null) {
-                setAddr(localStorage.getItem('addr'))
-            }
-            // console.log(localStorage.getItem('addr'))
-            // console.log(owner)
             setPrice(parseInt(response2, 16))
             let ipfsResponse = await fetch(`https://ipfs.io/ipfs/${response}/1.png`);
             try {
@@ -89,13 +83,21 @@ const IndividualItem = ({ id }) => {
                         <ListGroup.Item ><Link to={`/mandala/${id}`} className={styles.PlainText}>CryptoMandala#{id}</Link></ListGroup.Item>
                         <ListGroup.Item >{price / 10 ** 18} ICX
                             {
-                                addr === owner ? <Badge className={styles.RightAlign} pill bg="danger"> On Sale </Badge> : <Button
-                                    variant="outline-dark"
-                                    className={styles.RightAlign}
-                                    onClick={handleShow}
-                                >
-                                    Buy Now
-                                </Button>
+                                addr === owner ?                                 
+                                <Badge className={styles.RightAlign} pill bg="danger"> On Sale </Badge> : 
+                                <>{
+                                    addr ? 
+                                        <Button
+                                            variant="outline-dark"
+                                            className={styles.RightAlign}
+                                            onClick={handleShow}
+                                        >
+                                        Buy Now
+                                        </Button> 
+                                        : 
+                                    null
+                                    }
+                                </>
                             }
 
                         </ListGroup.Item>

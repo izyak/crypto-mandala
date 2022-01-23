@@ -4,10 +4,9 @@ import { useParams, Link } from 'react-router-dom'
 import styles from '../App.module.css'
 import { Container, Row, Col, Badge, ListGroup } from 'react-bootstrap';
 
-const Mandala = () => {
+const Mandala = ({addr}) => {
     const [uri, setURI] = useState("1")
     const [owner, setOwner] = useState()
-    const [addr, setAddr] = useState()
     const { id } = useParams();
 
     useEffect(() => {
@@ -23,10 +22,6 @@ const Mandala = () => {
                 console.log(err);
                 throw err;
             }
-        }
-        const _addr = localStorage.getItem('addr')
-        if (_addr !== null) {
-            setAddr(_addr)
         }
         fetchMyAPI()
     }, [id])
@@ -44,7 +39,7 @@ const Mandala = () => {
 
                 </ListGroup>
             </Col>
-            <Col sm={7}><img className={styles.SmallerImage} src={uri} /></Col>
+            <Col sm={7}><img alt="mandala" className={styles.SmallerImage} src={uri} /></Col>
         </Row>
 
     </Container>

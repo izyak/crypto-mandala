@@ -2,10 +2,11 @@ import { readOnly, sendTx } from "../helpers/iconservice"
 import { useState, useEffect } from 'react'
 import { NotificationManager } from 'react-notifications'
 import { useParams } from 'react-router-dom'
+import { BigNumber } from "bignumber.js";
 import styles from '../App.module.css'
 import { Container, Modal, Card, Row, Col, ListGroup, Button, InputGroup, FormControl } from 'react-bootstrap';
 
-const Wallets = () => {
+const Wallets = ({ addr }) => {
     const [tokens, setTokens] = useState(["1"]);
     const { id } = useParams();
 
@@ -18,18 +19,20 @@ const Wallets = () => {
     }, [id])
 
 
-
     return <Container>
         <h1> <br />Wallet Collections: <br /></h1>
         <Row xs={1} md={4} className="g-4">
             {
-                tokens.map(i => <Wallet key={i} id={parseInt(i)} />)
+                tokens && tokens.map(i => <Wallet key={i} addr={addr} disable={addr===undefined} id={parseInt(i)} />)
+            }
+            {
+                (tokens && tokens.length === 0) ? <p> You do not own any tokens. You can buy from Marketplace.</p> : null
             }
         </Row>
     </Container>
 }
 
-const Wallet = ({ id }) => {
+const Wallet = ({ id, addr, disable }) => {
     const [uri, setURI] = useState();
     const [isOnSale, setIsOnSale] = useState();
     const [price, setPrice] = useState(0);
@@ -42,7 +45,6 @@ const Wallet = ({ id }) => {
             let response = await readOnly('getTokenURI', { "_tokenId": JSON.stringify(id) })
             let response2 = await readOnly('isOnSale', { "_tokenId": JSON.stringify(id) })
             setIsOnSale(response2)
-            console.log(id, response2)
             let ipfsResponse = await fetch(`https://ipfs.io/ipfs/${response}/1.png`);
             try {
                 const responseJSON = await Promise.resolve(ipfsResponse);
@@ -58,7 +60,7 @@ const Wallet = ({ id }) => {
     const setOnSale = async () => {
         const params = {
             _tokenId: JSON.stringify(id),
-            _price: `${parseInt(price) * 10 ** 18}`
+            _price: `${BigNumber(parseInt(price) * 10 ** 18)}`
         }
         handleClose()
         NotificationManager.info("Setting on sale....")
@@ -97,7 +99,11 @@ const Wallet = ({ id }) => {
                             isOnSale === "0x1" ?
                                 <>
                                     <ListGroup.Item> &nbsp;
-                                        <Button variant="outline-danger" onClick={removeFromSale}>
+                                        <Button variant="outline-danger"
+                                            disabled={disable}
+                                            className={styles.CenterButtonSale}
+                                            onClick={removeFromSale}
+                                        >
                                             On Sale
                                         </Button>
                                     </ListGroup.Item>
@@ -105,7 +111,11 @@ const Wallet = ({ id }) => {
                                 :
                                 <>
                                     <ListGroup.Item>&nbsp;
-                                        <Button onClick={handleShow} className={styles.CenterButtonSale} variant="outline-dark">
+                                        <Button onClick={handleShow}
+                                            disabled={disable}
+                                            className={styles.CenterButtonSale}
+                                            variant="outline-dark"
+                                        >
                                             Set On Sale
                                         </Button>
                                     </ListGroup.Item>
@@ -136,7 +146,6 @@ const Wallet = ({ id }) => {
                     </Button>
                 </Modal.Footer>
             </Modal>
-            {/* {NotificationManager.info("List on sale request sent")} */}
         </Col>
     );
 }
